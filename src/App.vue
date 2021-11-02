@@ -1,33 +1,67 @@
 <template>
-  <div>
-    <div class="flex flex-col justify-center border rounded-md w-full md:w-1/3 mx-4 md:mx-auto mt-20 p-3">
-      <h2 class="text-center mb-4">Calculator</h2>
-      <input type="number" v-model="val1" class="rounded-md w-full h-12 border px-3 py-1 mb-3" />
-      <input type="number" v-model="val2" class="rounded-md w-full h-12 border px-3 py-1" />
-      <button class="mt-4 bg-blue-600 px-4 py-2 rounded-md text-white" @click="calculate">
-        Sum
-      </button>
-      <div class="w-full border-b px-3 py-1 mt-5">
-        <span class="font-bold">Result:</span>
-        {{ sum }}
+  <div id="app-bg" class="p-1">
+    <div v-if="weather" class="text-center text-white weather-card w-80 rounded-md m-auto p-4 mt-28 flex flex-col justify-center">
+      <p class="mb-3">
+        {{ date }}
+      </p>
+      <p class="">
+        <span>{{ weather.name }}, </span>
+        <span>{{ weather.sys.country }}</span>
+      </p>
+      <h1 class="pt-5 mb-10 flex flex-col">
+        <span class="text-6xl">{{ weather.main.temp }}<sup>&deg;</sup></span>
+        <span class="text-xl pt-2">{{ weather.weather[0].main }}</span>
+      </h1>
+      <div class="flex justify-between">
+        <p>
+          <span>Humidity: </span>
+          <span>{{ weather.main.humidity }}%</span>
+        </p>
+        <p>
+          <span>Wind: </span>
+          <span>{{ weather.wind.speed }}km/h</span>
+        </p>
       </div>
     </div>
   </div>
 </template>
 <script>
+import { HTTP } from "./service/api";
+import { PERIOD } from "./service/config";
+import moment from "moment";
 export default {
   data() {
     return {
-      val1: 0,
-      val2: 0,
-      sum: null,
+      weather: null,
+      date: moment().format("MMMM Do, hh:mm A"),
     };
   },
+  created() {
+    // HTTP.defaults.params.q = "Karachi";
+    this.getWeather();
+  },
   methods: {
-    calculate() {
-      this.sum = +this.val1 + +this.val2;
+    getWeather() {
+      this.date = moment().format("MMMM Do, hh:mm A");
+      HTTP.get().then((res) => {
+        this.weather = res.data;
+      });
+      setInterval(() => {
+        this.getWeather();
+      }, PERIOD);
     },
   },
 };
 </script>
-<style></style>
+<style>
+#app-bg {
+  height: 100vh;
+  background: url("./assets/sky.jpg");
+  background-size: cover;
+  /* background: linear-gradient(to top right, #059dcf, rgb(15, 166, 216) 0, #00d0ff); W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+}
+.weather-card {
+  background: rgba(15, 166, 216, 0.4);
+  backdrop-filter: saturate(180%) blur(10px);
+}
+</style>
